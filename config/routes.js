@@ -23,7 +23,7 @@ module.exports.routes = {
     'GET /fav/list' : 'FavouriteController.list',
     'GET /fav/:name' : 'FavouriteController.search',
 
-//routes for cartA
+    //routes for cart
     'POST /cart/add' : 'CartController.add',
     'GET /cart/list' : 'CartController.list',
     'DELETE /cart/delete' : 'CartController.delete',

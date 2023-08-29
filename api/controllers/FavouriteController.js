@@ -6,6 +6,13 @@
  */
 
 module.exports = {
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description add food to favourite list by user only
+   * @route (POST /fav/add)
+   */
   add: async (req, res) => {
     try {
         let id = sails.config.custom.uuid;
@@ -48,6 +55,13 @@ module.exports = {
         })
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description remove food to favourite list by user only
+   * @route (DELETE /fav/delete)
+   */
   delete: async (req, res) => {
     try {
         const user = req.userData.userId;
@@ -76,6 +90,13 @@ module.exports = {
         })
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description list all food which are added in favourite list
+   * @route (GET /fav/list)
+   */
   list: async (req, res) => {
     try {
         const user = req.userData.userId;
@@ -97,6 +118,13 @@ module.exports = {
         })
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description search food by name in favourite list
+   * @route (GET /fav/:name)
+   */
   search: async (req, res) => {
     try {
         const user = req.userData.userId;
@@ -110,6 +138,7 @@ module.exports = {
           ON "fav"."foodName" = "f"."id"
           WHERE lower("f"."name") LIKE '%' || lower('${req.param("name")}') || '%'
           AND "f"."isDeleted" = false
+          AND "fav"."user" = '${user}'
         `
         const search = await sails.sendNativeQuery(query, [])
         // const findFood = await Favourite.find({
@@ -130,7 +159,7 @@ module.exports = {
     } catch (error) {
         return res.status(500).json({
             message: 'server error ' + error
-          })
+        })
     }
   },
 };

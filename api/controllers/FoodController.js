@@ -7,7 +7,13 @@
 
 
 module.exports = {
-
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @descriptin Add food of particular category by admin only
+     * @route (POST /food/add)
+     */
     add: async (req,res)=> {
         try {
             const id = sails.config.custom.uuid;
@@ -62,6 +68,13 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description delete food by admin only
+     * @route (DELETE /food/delete)
+     */
     delete : async (req,res)=> {
         try {
             const { id } = req.body;
@@ -97,6 +110,13 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description update food by admin only
+     * @route (PATCH /food/update)
+     */
     update : async (req,res)=> {
         try {
             let {userId} = req.userData;
@@ -124,6 +144,13 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description list all food with category access by all users and admin
+     * @route (GET /)
+     */
     listAll : async (req,res) => {
         try {
             let listFood = await Food.find({
@@ -144,6 +171,13 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description get data of particular food item
+     * @route (POST /listFood)
+     */
     listOneFood: async (req,res) => {
         try {
             let {foodId} = req.body;

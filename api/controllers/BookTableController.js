@@ -6,6 +6,13 @@
  */
 
 module.exports = {
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description book table in restaurant
+   * @route (POST /table/book)
+   */
   book: async (req, res) => {
     try {
       const id = sails.config.custom.uuid;
@@ -60,6 +67,13 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description cancel booked table in restaurant
+   * @route (DELETE /table/cancel)
+   */
   cancel: async (req, res) => {
     try {
       const user = req.userData.userId;
@@ -89,6 +103,13 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description list all booked table which is booked by particular user
+   * @route (GET /table/list)
+   */
   list: async (req, res) => {
     try {
       const user = req.userData.userId;
@@ -114,6 +135,13 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description get details of one booked table
+   * @route (POST /table/listOne)
+   */
   listOne: async (req, res) => {
     try {
       const user = req.userData.userId;
@@ -137,6 +165,13 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description confirm booked table by admin
+   * @route (POST /table/confirm)
+   */
   confirm: async (req, res) => {
     try {
       const { id, status } = req.body;

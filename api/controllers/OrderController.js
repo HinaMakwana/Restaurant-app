@@ -6,6 +6,13 @@
  */
 
 module.exports = {
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description order food which is added in cart
+   * @route (POST /order/add)
+   */
   add: async (req, res) => {
     try {
       const id = sails.config.custom.uuid;
@@ -52,6 +59,13 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description cancel order by user
+   * @route (DELETE /order/delete)
+   */
   delete: async (req, res) => {
     try {
       const user = req.userData.userId;
@@ -79,6 +93,13 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @description list all orders of user
+   * @route (GET /order/list)
+   */
   list: async (req, res) => {
     try {
       const user = req.userData.userId;

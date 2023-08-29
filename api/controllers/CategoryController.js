@@ -8,6 +8,14 @@
 
 module.exports = {
 
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @returns Category
+     * @description Create category only by admin
+     * @route (POST /category/add)
+     */
     add : async (req,res)=> {
         try {
             const {userId} = req.userData;
@@ -41,6 +49,14 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @returns String that isDeleted or not
+     * @description Delete category only by admin
+     * @route (DELETE /category/delete)
+     */
     delete : async (req,res)=> {
         try {
             const {userId} = req.userData;
@@ -79,6 +95,14 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @returns All categories
+     * @description List all categories
+     * @route (GET /listAll)
+     */
     listAll : async (req,res) => {
         try {
             let categories = await Category.find({isDeleted: false})
@@ -97,6 +121,14 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @returns Update category
+     * @description update category by admin only
+     * @route (PATCH /update/:id)
+     */
     update : async (req,res) => {
         try {
             let { userId } = req.userData;
@@ -135,6 +167,14 @@ module.exports = {
             })
         }
     },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @returns Data of signle category
+     * @description get one category
+     * @route (GET /:id)
+     */
     getOneCategory : async (req,res) => {
         try {
             let categoryId = req.params.id;
