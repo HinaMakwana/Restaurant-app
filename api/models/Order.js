@@ -13,7 +13,7 @@ module.exports = {
       model : 'User'
     },
     totalAmount : {
-      type : 'float'
+      type : 'number'
     },
     address : {
       type : 'string',

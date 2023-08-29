@@ -20,7 +20,7 @@ module.exports = {
     defaultsTo : new Date().toLocaleDateString()
    },
    price : {
-    type : 'float'
+    type : 'number'
    },
    isDeleted : {
     type : 'boolean',

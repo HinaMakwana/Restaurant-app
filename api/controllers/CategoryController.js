@@ -5,44 +5,164 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+
 module.exports = {
 
     add : async (req,res)=> {
-        const validate = sails.config.custom.validate
-        validate(req)
-        const errors = await req.getValidationResult();
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array()[0].msg });
-        }
-        const admin = req.userData
-        const id = sails.config.custom.uuid
-        const { name } = req.body
-            const addCategory = await Category.findOrCreate({name : name, isDeleted : false},{ id : id(), name : name})
+        try {
+            const {userId} = req.userData;
+            const id = sails.config.custom.uuid;
+            const { name } = req.body;
+            let result = await Category.validate({name,userId});
+            if(result.hasError) {
+                return res.status(400).json({
+                    message: 'validation error',
+                    error: result.error
+                })
+            }
+            let findCategory = await Category.findOne({name:name, isDeleted: false})
+            if(findCategory) {
+                return res.status(409).status({
+                    message: 'category name already exist'
+                })
+            }
+            let createCategory = await Category.create({
+                id: id(),
+                name: name,
+                addedBy: userId
+            }).fetch();
             return res.status(200).json({
                 message : 'category created',
-                category : addCategory
+                category : createCategory
             })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
     },
     delete : async (req,res)=> {
-        const admin = req.userData
-        const { name } = req.body
-            const findCategory = await Category.findOne({ name : name , isDeleted: false})
+        try {
+            const {userId} = req.userData;
+            const { name } = req.body;
+            const findCategory = await Category.findOne({
+                name : name ,
+                isDeleted: false
+            });
             if(!findCategory) {
                 return res.status(404).json({
                     message : 'Category not found'
                 })
             }
-            const findFoodCategory = await Food.find({category : findCategory.id})
+            const findFoodCategory = await Food.find({category : findCategory.id});
             if(findFoodCategory[0]){
                 return res.status(500).json({
                     message : 'you can not delete category'
                 })
             }
-            const deleteCategory = await Category.updateOne({ name : name }, { isDeleted : true })
-            res.status(200).json({
+            const deleteCategory = await Category.updateOne(
+                { name : name, addedBy: userId },
+                { isDeleted : true }
+            )
+            if(!deleteCategory) {
+                return res.status(401).json({
+                    message: 'you cannot delete category'
+                })
+            }
+            return res.status(200).json({
                 message : 'category deleted successfully',
                 category : deleteCategory
             })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    listAll : async (req,res) => {
+        try {
+            let categories = await Category.find({isDeleted: false})
+            .populate('food')
+            if(!categories[0]) {
+                return res.status(404).json({
+                    message: 'category not added by admin'
+                })
+            }
+            return res.status(200).json({
+                categories: categories
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    update : async (req,res) => {
+        try {
+            let { userId } = req.userData;
+            let categoryId = req.params.id;
+            let { newName } = req.body;
+            let findCategory = await Category.findOne({
+                id: categoryId,
+                isDeleted: false
+            })
+            if(!findCategory) {
+                return res.status(404).json({
+                    message: 'Category not found'
+                })
+            }
+            let findName = await Category.findOne({
+                name: newName
+            })
+            if(findName) {
+                return res.status(409).json({
+                    message: 'category already exist'
+                })
+            }
+            let updateCategory = await Category.updateOne({
+                id: categoryId,
+                isDeleted: false,
+                addedBy: userId
+            },{
+                name: newName
+            })
+            return res.status(200).json({
+                category: updateCategory
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    getOneCategory : async (req,res) => {
+        try {
+            let categoryId = req.params.id;
+            let findCategory = await Category.findOne({
+                id: categoryId,
+                isDeleted: false
+            })
+            .populate('food')
+            .populate('addedBy')
+            if(!findCategory) {
+                return res.status(404).json({
+                    message: 'category not found'
+                })
+            }
+            findCategory.addedBy = _.omit(
+                findCategory.addedBy,
+                "token",
+                "password",
+                "isDeleted"
+            )
+            return res.status(200).json({
+                category : findCategory
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
     }
 
 };

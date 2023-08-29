@@ -5,6 +5,9 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 const date1 = require('date-and-time');
+let validateUser = sails.config.common.validation.BookTable;
+let Validator = require('validatorjs');
+
 
 module.exports = {
 
@@ -30,12 +33,36 @@ module.exports = {
       type : 'string',
       isIn : ['pending', 'confirm', 'cancel'],
       defaultsTo : 'pending'
+    },
+    isDeleted : {
+      type : 'boolean',
+      defaultsTo : false
     }
   },
-  validate : async (req)=> {
-    req.check('guestNo').exists().withMessage('No of guest required')
-    req.check('guestNo').exists().isLength({ min : 1}, { max : 6}).withMessage('enter no guest between [1,6]')
-    req.check('timeSlot').exists().withMessage('timeSlot required')
+  validate : async (data)=> {
+    let requiredRules = Object.keys(validateUser).filter((key)=> {
+      if(Object.keys(data).indexOf(key)>= 0) {
+        return key
+      }
+    })
+    let rules = {};
+    requiredRules.forEach((val)=> {
+      rules[val] = validateUser[val]
+    })
+    let validate = new Validator(data,rules);
+    let result = {}
+    if(validate.passes()){
+      console.log('validate success');
+      result['hasError'] = false
+      return data
+    }
+    if(validate.fails()) {
+      console.log(1);
+      result['hasError'] = true
+      result['error'] = validate.errors.all()
+    }
+    return result
+
   },
   checkDate : async function(attr1) {
     let newDate = date1.transform(attr1,'D/M/YYYY','M/D/YYYY')
@@ -64,7 +91,7 @@ module.exports = {
     todayDate = date1.transform(todayDate, 'M/D/YYYY, h:m:s A','D/M/YYYY, h:m:s A')
     todayDate = Date.parse(todayDate)
     if(newDate < todayDate) {
-      return msg = 'could not book table'
+      return {msg : 'could not book table'}
     }
     /* const match = attr.match('^(1[0-2]|0?[1-9]):([0-5]?[0-9] ([AaPp][Mm]))$')
     const match1 = attr.match('^(1[1]?[0-2]):([0-5]?[0-9] ([Pp][Mm]))$')
@@ -77,11 +104,11 @@ module.exports = {
     let day = date1.transform(attr2,'D/M/YYYY','M/D/YYYY')
     let newDay = new Date(day).getDay()
     if(newDay == 0 || newDay == 3) {
-      return msg = 'Restaurant closed'
+      return {msg : 'Restaurant closed'}
     }
     const newData = date1.isValid(attr1,'h:m A')
     if(newData == false){
-      return msg = 'time is invalid'
+      return {msg : 'time is invalid'}
     }
     const data = date1.preparse(attr1, 'h:m A')
     switch(newDay){
@@ -115,7 +142,7 @@ module.exports = {
     if(time) {
       return time
     } else {
-      return msg = 'Restaurant closed';
+      return {msg : 'Restaurant closed'}
     }
   }
 

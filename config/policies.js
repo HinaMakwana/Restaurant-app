@@ -18,21 +18,26 @@ module.exports.policies = {
   ***************************************************************************/
   UserController : {
     logout : 'isAuthorized',
+    profile : 'isAuthorized',
   },
   CategoryController : {
-    '*' : ['isAuthorized', 'isAdmin']
+    '*' : ['isAuthorized', 'isAdmin'], //AND condition
+    listAll : 'isAuthorized',
+    getOneCategory: 'isAuthorized',
   },
   FoodController : {
-    '*' : ['isAuthorized', 'isAdmin']
+    '*' : ['isAuthorized', 'isAdmin'],
+    listAll : 'isAuthorized',
+    listOneFood : 'isAuthorized',
   },
   OrderController : {
-    '*' :[ 'isAuthorized','isUser']
+    '*' :[ 'isAuthorized','isUser'],
   },
   CartController : {
-    '*' : ['isAuthorized', 'isUser']
+    '*' : ['isAuthorized', 'isUser'],
   },
   FavouriteController : {
-    '*' :['isAuthorized', 'isUser']
+    '*' :['isAuthorized', 'isUser'],
   },
   BookTableController : {
     '*' : ['isAuthorized', 'isUser'],

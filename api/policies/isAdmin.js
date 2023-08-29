@@ -9,7 +9,7 @@ module.exports = async (req,res,next)=> {
             return next()
         } else {
             return res.status(403).json({
-                message : 'only for admin'
+                message : 'Access by admin only'
             })
         }
     } catch(error) {

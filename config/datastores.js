@@ -50,10 +50,8 @@ module.exports.datastores = {
     ***************************************************************************/
     // adapter: 'sails-mysql',
     // url: 'mysql://user:password@host:port/database',
-    adapter: 'sails-mysql',
-    url : 'mysql://hinamak:VY7Iavm6iu5q1Asr8toi@15.206.7.200:3310/hinamak'
-
+    adapter: 'sails-postgresql',
+    url: 'postgresql://postgres:root@localhost:5432/restaurant',
   },
-
 
 };

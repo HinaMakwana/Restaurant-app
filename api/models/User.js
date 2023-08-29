@@ -5,7 +5,8 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
-
+let validateUser = sails.config.common.validation.User;
+let Validator = require('validatorjs');
 module.exports = {
 
   attributes: {
@@ -24,7 +25,8 @@ module.exports = {
       required : true
     },
     token : {
-      type : 'string'
+      type : 'string',
+      allowNull: true
     },
     role : {
       type : 'string',
@@ -37,17 +39,38 @@ module.exports = {
     address : {
       type : 'string',
       maxLength : 150
+    },
+    isDeleted: {
+      type: 'boolean',
+      defaultsTo: false
     }
 
   },
 
-  validate : async (req)=> {
-    req.check('name').exists().withMessage('name is required')
-    req.check('email').exists().withMessage('email is required')
-    req.check('email').exists().isEmail().withMessage('enter valid email')
-    req.check('password').exists().withMessage('password is required')
-    req.check('address').exists().withMessage('address is required')
-    req.check('address').exists().isLength({ max : 150 }).withMessage('Enter 40 character only in address')
+  validate : async (data)=> {
+    let requiredRules = Object.keys(validateUser).filter((key)=> {
+      if(Object.keys(data).indexOf(key)>= 0) {
+        return key
+      }
+    })
+    let rules = {};
+    requiredRules.forEach((val)=> {
+      rules[val] = validateUser[val]
+    })
+    let validate = new Validator(data,rules);
+    let result = {}
+    if(validate.passes()){
+      console.log('validate success');
+      result['hasError'] = false
+      return data
+    }
+    if(validate.fails()) {
+      console.log(1);
+      result['hasError'] = true
+      result['error'] = validate.errors.all()
+    }
+    return result
+
   }
 
 };

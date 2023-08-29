@@ -6,96 +6,165 @@
  */
 
 module.exports = {
-
-  add : async (req,res)=> {
-    const validate = sails.config.custom.validate
-    const id = sails.config.custom.uuid
-    validate(req)
-    const errors = await req.getValidationResult();
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array()[0].msg });
-    }
-    const user = req.userData
-    const { food } = req.body
-      const findUser = await User.findOne({ id : user.userId })
-          if(!findUser){
-              return res.status(404).json({
-                  message : 'user not found'
-              })
-          }
-          const findFood = await Food.findOne({ name : food, isDeleted : false})
-          if(!findFood) {
-              return res.status(400).json({
-                  message : 'food not found'
-              })
-          }
-          let data = {
-            id : id(),
-            user : user.userId,
-            food : food,
-            price : findFood.price,
-            totalAmount : findFood.price
-          }
-        const findCart = await Cart.findOne({user : user.userId, food : food, isDeleted : false})
-        if(findCart) {
-            return res.status(409).json({
-              message : 'already added in cart'
-            })
-        }
-        const addtoCart = await Cart.create(data).fetch()
-        res.status(200).json({
-          message : 'food is added in cart',
-          Cart : addtoCart
+  add: async (req, res) => {
+    try {
+      const id = sails.config.custom.uuid;
+      const user = req.userData.userId;
+      let { food, quantity } = req.body;
+      let result = await Cart.validate({ food, user, quantity })
+      if(result.hasError) {
+        return res.status(400).json({
+          message: 'validation error',
+          error: result.error
         })
-  },
-  list : async (req,res)=> {
-    const user = req.userData
-      const findCart = await Cart.find({user : user.userId, isDeleted : false})
-      const total = await Cart.sum('totalAmount', { where : {user : user.userId, isDeleted : false}})
-    return res.status(200).json({
-      total : total,
-      count : findCart.length,
-      cart : findCart
-    })
-  },
-  update : async (req,res)=> {
-    const user = req.userData
-    const { food, quantity } = req.body
-      const findCart = await Cart.findOne({ food : food , user : user.userId , isDeleted : false})
-      if(!findCart){
+      }
+      const findUser = await User.findOne({
+        id: user,
+        isDeleted: false
+      });
+      if (!findUser) {
         return res.status(404).json({
-          message : 'food in not found'
-        })
+          message: "user not found",
+        });
+      }
+      const findFood = await Food.findOne({
+        id: food,
+        isDeleted: false
+      });
+      if (!findFood) {
+        return res.status(400).json({
+          message: "food not found",
+        });
+      }
+
+      if (isNaN(quantity) == false && quantity > 0) {
+        quantity = parseInt(quantity);
+      } else {
+        if(!quantity) {
+          quantity = 1;
+        } else {
+            return res.status(400).json({
+              message: "enter positive number only",
+            });
+        }
+      }
+      let data = {
+        id: id(),
+        user: user,
+        food: food,
+        price: findFood.price,
+        totalAmount: (findFood.price) * quantity,
+        quantity: quantity
+      };
+      const findCart = await Cart.findOne({
+        user: user,
+        food: food,
+        isDeleted: false,
+      });
+      if (findCart) {
+        return res.status(409).json({
+          message: "already added in cart",
+        });
+      }
+      const addtoCart = await Cart.create(data).fetch();
+      res.status(200).json({
+        message: "food is added in cart",
+        Cart: addtoCart,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: 'server error ' + error
+      })
+    }
+  },
+  list: async (req, res) => {
+    try {
+      const user = req.userData.userId;
+      const findCart = await Cart.find({
+        user: user,
+        isDeleted: false
+      })
+      .populate('food');
+      const total = await Cart.sum("totalAmount", {
+        where: {
+          user: user,
+          isDeleted: false
+        },
+      });
+      return res.status(200).json({
+        total: total,
+        count: findCart.length,
+        cart: findCart,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: 'server error ' + error
+      })
+    }
+  },
+  update: async (req, res) => {
+    try {
+      const {userId} = req.userData;
+      const { food, quantity } = req.body;
+      const findCart = await Cart.findOne({
+        food: food,
+        user: userId,
+        isDeleted: false,
+      });
+      if (!findCart) {
+        return res.status(404).json({
+          message: "food is not found",
+        });
       }
       let quantity1;
-      if(isNaN(quantity) == false && quantity > 0){
-          quantity1 = parseInt(quantity)
+      if (isNaN(quantity) == false && quantity > 0) {
+        quantity1 = parseInt(quantity);
       } else {
-          return res.status(400).json({
-              message :'enter positive number only'
-          })
+        return res.status(400).json({
+          message: "enter positive number only",
+        });
       }
-      const totalAmount = quantity1 * (findCart.price)
-      const updateCart = await Cart.update({ food : food}, { quantity : quantity1, totalAmount : totalAmount}).fetch()
+      const totalAmount = quantity1 * (findCart.price);
+      const updateCart = await Cart.update(
+        { food: food, user: userId },
+        { quantity: quantity1, totalAmount: totalAmount }
+      ).fetch();
       return res.status(200).json({
-        message : 'Cart updated',
-        Cart : updateCart
+        message: "Cart updated",
+        Cart: updateCart,
       });
-  },
-  delete : async (req,res)=> {
-    const user = req.userData
-    const { food } = req.body
-      const findCart = await Cart.findOne({ food : food, isDeleted : false, user : user.userId})
-      if(!findCart){
-        return res.status(404).json({
-          message : 'food is not found'
-        })
-      }
-      const deleteCart = await Cart.updateOne({ food : food, user : user.userId} , { isDeleted : true})
-      return res.status(200).json({
-        message : 'Cart deleted',
-        Cart : deleteCart
+    } catch (error) {
+      return res.status(500).json({
+        message: 'server error ' + error
       })
-  }
-
+    }
+  },
+  delete: async (req, res) => {
+    try {
+      const user = req.userData.userId;
+      const { food } = req.body;
+      const findCart = await Cart.findOne({
+        food: food,
+        isDeleted: false,
+        user: user,
+      });
+      if (!findCart) {
+        return res.status(404).json({
+          message: "food is not found",
+        });
+      }
+      const deleteCart = await Cart.updateOne(
+        { food: food, user: user.userId },
+        { isDeleted: true }
+      );
+      return res.status(200).json({
+        message: "Cart deleted",
+        Cart: deleteCart,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: 'server error ' + error
+      })
+    }
+  },
 };

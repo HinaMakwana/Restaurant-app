@@ -5,7 +5,7 @@ module.exports = async (req,res,next)=> {
         const token = req.headers.authorization.split( " " )[1];
         const findToken = await User.findOne({token : token})
         const decoded = await jwt.verify(token, process.env.JWT_KEY)
-        if(token == findToken.token) {
+        if(token === findToken.token) {
             req.userData = decoded
             return next()
         } else {

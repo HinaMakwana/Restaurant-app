@@ -38,15 +38,20 @@ module.exports.routes = {
     'POST /food/add' : 'FoodController.add',
     'DELETE /food/delete' : 'FoodController.delete',
     'PATCH /food/update' : 'FoodController.update',
+    'GET /' : 'FoodController.listAll',
+    'POST /listFood' : 'FoodController.listOneFood',
 
     //routes for category
     'POST /category/add' : 'CategoryController.add',
     'DELETE /category/delete' : 'CategoryController.delete',
+    'GET /listAll' : 'CategoryController.listAll',
+    'PATCH /update/:id' : 'CategoryController.update',
+    'GET /:id' : 'CategoryController.getOneCategory',
 
     //routes for user
     'POST /user/signup' : 'UserController.signUp',
     'POST /user/login' : 'UserController.login',
     'POST /user/logout' : 'UserController.logout',
-    'POST /user/list' : 'UserController.list',
-    'POST /category/list' : 'UserController.listFood',
+    'GET /user/list' : 'UserController.list',
+    'GET /listOne' : 'UserController.profile',
 };

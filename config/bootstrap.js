@@ -18,11 +18,9 @@ module.exports.bootstrap = async function() {
   const pass = await bcrypt.hash('admin', 10)
 
   const findUser = await User.findOne({ role : 'admin' })
-  console.log(role);
   if(!findUser){
     const createUser = await User.createEach([
       { id : id(), name : 'admin1', mobileNo : 9898365241, address : 'bhavnagar',email: 'admin1@gmail.com', password: pass, role : role.admin},
-
     ])
   }
   // By convention, this is a good place to set up fake data during development.

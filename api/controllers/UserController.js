@@ -4,146 +4,237 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
+let bcrypt = sails.config.custom.bcrypt;
 
 module.exports = {
 
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description registration for user
+     * @route (POST /user/signup)
+     */
     signUp : async (req,res)=> {
-        const validate = sails.config.custom.validate
-        const bcrypt = sails.config.custom.bcrypt
-        const role = sails.config.common
-        validate(req)
-        const errors = await req.getValidationResult();
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array()[0].msg });
-        }
-        let { name, email, password, mobileNo, address } = req.body
-        const id = sails.config.custom.uuid
-        const pass = await bcrypt.hash(password, 10)
+        try {
+            let {
+                name,
+                email,
+                password,
+                confirmPassword,
+                mobileNo,
+                address
+            } = req.body;
 
-        if(mobileNo != null) {
-            if(mobileNo.length == 10){
-                console.log(isNaN(mobileNo));
-                if(isNaN(mobileNo) == false){
-                    console.log(mobileNo);
+            let result = await User.validate({
+                name,
+                email,
+                password,
+                confirmPassword,
+                mobileNo,
+                address
+            })
+            if(result.hasError) {
+                return res.status(400).json({
+                    message: 'validation error',
+                    error: result.error
+                })
+            }
+            const id = sails.config.custom.uuid;
+            const pass = await bcrypt.hash(password, 10);
+
+            if(mobileNo != null) {
+                if(mobileNo.length == 10){
+                    console.log(isNaN(mobileNo));
+                    if(isNaN(mobileNo) == false){
+                        console.log(mobileNo);
+                    } else {
+                        return res.status(400).json({
+                            message :'mobile no is invalid'
+                        })
+                    }
                 } else {
                     return res.status(400).json({
                         message :'mobile no is invalid'
                     })
                 }
-            } else {
-                return res.status(400).json({
-                    message :'mobile no is invalid'
-                })
             }
-        }
 
-        const data = {
-            id : id(),
-            name : name,
-            email : email,
-            password : pass,
-            role : role.user,
-            mobileNo : mobileNo,
-            address : address
-        }
-        const findUser = await User.findOne({name : name, email : email})
-        if(findUser){
-            return res.status(409).json({
-                msg : 'user already exist'
-            })
-        } else {
-            const createUser = await User.create(data).fetch()
-            return res.status(200).json({
-                msg : 'user created',
-                User : createUser
-            })
-        }
-    },
-    login : async (req,res)=> {
-        const bcrypt = sails.config.custom.bcrypt
-        const jwt = sails.config.custom.jwt
-        const { email, password } = req.body
-        const user = await User.findOne({ email : email })
-        if(!user){
-            return res.status(404).json({msg : 'email invalid'})
-        }
-        const pass = await  bcrypt.compare( password, user.password )
-        if(!pass){
-            return res.status(400).json({msg : 'password invalid'})
-        }
-        const token = jwt.sign(
-            {
-                email : user.email,
-                userId : user.id,
-                role : user.role
-            },
-            process.env.JWT_KEY,
-            {
-                expiresIn : "8h"
+            if(password !== confirmPassword) {
+                return res.status(400).json({
+                    message: 'Password and confirm password not match'
+                })
             }
-        );
-        const updateUser = await User.update({email : user.email}, { token : token })
-        return res.status(200).json({
-            message: 'Auth successful',
-            token: token
-        });
-    },
-    logout:async (req,res)=>{
-        const user =req.userData.userId;
-        let findUser = await User.findOne({id : user});
-        if(findUser) {
-            let Edit = await User.update({ id : findUser.id}, { token : ""}).fetch();
-            if(Edit) {
-                return res.status(200).json({
-                    msg : 'user logout successfully'
+
+            const data = {
+                id : id(),
+                name : name,
+                email : email,
+                password : pass,
+                mobileNo : mobileNo,
+                address : address
+            }
+            const findUser = await User.findOne({
+                email : email,
+                isDeleted: false
+            });
+            if(findUser){
+                return res.status(409).json({
+                    message : 'user already exist'
                 })
             } else {
-                return res.status(500).json({
-                    msg : 'Database error'
+                const createUser = await User.create(data).fetch()
+                return res.status(200).json({
+                    message : 'user created',
+                    User : createUser
                 })
             }
-        }
-    },
-    list : async (req,res)=> {
-        const { id } = req.body
-        if( id == null ){
-            const findCategory = await Category.find({isDeleted : false})
-            return res.status(202).json({
-                count : findCategory.length,
-                categories : findCategory
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
             })
         }
-        const findFoodCategory = await Food.find({ category : id, isDeleted : false}).omit(['isDeleted'])
-        if(!findFoodCategory[0]) {
-            const findFood = await Food.findOne({ id : id, isDeleted : false}).omit(['isDeleted','updatedAt'])
-            if(!findFood){
+    },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description Login for user return authToken
+     * @route (POST /user/login)
+     */
+    login : async (req,res)=> {
+        try {
+            const jwt = sails.config.custom.jwt;
+            const { email, password } = req.body;
+            let result = await User.validate({
+                email,
+                password,
+            })
+            if(result.hasError) {
+                return res.status(400).json({
+                    message: 'validation error',
+                    error: result.error
+                })
+            }
+            const user = await User.findOne({ email : email, isDeleted: false })
+            if(!user){
                 return res.status(404).json({
-                    message : 'id is invalid'
+                    message : 'email invalid'
+                })
+            }
+            const pass = await  bcrypt.compare( password, user.password )
+            if(!pass){
+                return res.status(400).json({
+                    message : 'password invalid'
+                })
+            }
+            const token = jwt.sign(
+                {
+                    email : user.email,
+                    userId : user.id,
+                    role : user.role
+                },
+                process.env.JWT_KEY,
+                {
+                    expiresIn : "8h"
+                }
+            );
+            await User.updateOne({email : user.email}, { token : token })
+            return res.status(200).json({
+                message: 'Auth successful',
+                token: token
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description Logout user update token null
+     * @route (POST /user/logout)
+     */
+    logout:async (req,res)=>{
+        try {
+            const user =req.userData.userId;
+            let findUser = await User.findOne({id : user, isDeleted: false});
+            if(findUser) {
+                let Edit = await User.updateOne({ id : findUser.id}, { token : ""});
+                if(Edit) {
+                    return res.status(200).json({
+                        message : 'user logout successfully'
+                    })
+                } else {
+                    return res.status(500).json({
+                        message : 'Database error'
+                    })
+                }
+            }
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description List all users
+     * @route (GET /user/list)
+     */
+    list : async (req,res)=> {
+        try {
+            let findAllUsers = await User.find({
+                isDeleted: false,
+                role: 'user'
+            })
+            .omit(["token","password","isDeleted"])
+            return res.status(200).json({
+                users: findAllUsers
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description get user profile
+     * @route (GET /listOne)
+     */
+    profile : async (req,res)=> {
+        try {
+            let { userId } = req.userData;
+            let findUser = await User.findOne({
+                id: userId,
+                isDeleted: false
+            })
+            findUser = _.omit(
+                findUser,
+                "token",
+                "password",
+                "isDeleted"
+            )
+            if(!findUser) {
+                return res.status(404).json({
+                    message: 'user not found'
                 })
             }
             return res.status(200).json({
-                food : findFood
+                user: findUser
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
             })
         }
-        res.status(201).json({
-            category : id,
-            count : findFoodCategory.length,
-            food : findFoodCategory
-        })
-    },
-    listFood : async (req,res)=> {
-        const { id } = req.body
-        const listCategory = await Category.find({id : id,isDeleted : false }).populate('food', { where : { isDeleted : false}})
-        if(!listCategory[0]){
-            return res.status(404).json({
-                message : 'category not found'
-            })
-        }
-        res.status(200).json({
-            category : id,
-            count : listCategory[0].food.length,
-            food : listCategory[0].food,
-        })
     },
 
 };
