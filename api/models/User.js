@@ -50,6 +50,15 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false,
       columnType: 'boolean'
+    },
+    otp : {
+      type: 'string',
+      allowNull : true,
+      columnName : 'forgetPasswordOtp'
+    },
+    expiryTime : {
+      type: 'ref',
+      columnName : 'otpExpireTime'
     }
 
   },

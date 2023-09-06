@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 let bcrypt = sails.config.custom.bcrypt;
+let otp = sails.config.common.otpGenerator;
+const jwt = sails.config.custom.jwt;
 
 module.exports = {
 
@@ -104,7 +106,6 @@ module.exports = {
      */
     login : async (req,res)=> {
         try {
-            const jwt = sails.config.custom.jwt;
             const { email, password } = req.body;
             let result = await User.validate({
                 email,
@@ -122,7 +123,7 @@ module.exports = {
                     message : 'email invalid'
                 })
             }
-            const pass = await  bcrypt.compare( password, user.password )
+            const pass = await bcrypt.compare( password, user.password );
             if(!pass){
                 return res.status(400).json({
                     message : 'password invalid'
@@ -236,5 +237,164 @@ module.exports = {
             })
         }
     },
+    /**
+     * @description forget password
+     * @route (PATCH /forget/pass)
+     */
+    forgetPassword : async (req,res) => {
+        try {
+            let { email } = req.body;
+            let findEmail = await User.findOne({
+                email : email,
+                isDeleted : false
+            })
 
+            if(!findEmail) {
+                return res.status(404).json({
+                    message: 'Entered email is invalid'
+                })
+            }
+            let otpToken = otp.generate(4, {
+                upperCaseAlphabets: false,
+                lowerCaseAlphabets: false,
+                specialChars: false
+            });
+            let expiryTime = Date.now() + 120000;
+            let updateData = await User.updateOne({
+                email : email,
+                isDeleted : false
+            })
+            .set({
+                otp : otpToken,
+                expiryTime : expiryTime
+            })
+            updateData = _.omit(updateData,
+                "token",
+                "password"
+            );
+            return res.status(200).json({
+                data : updateData
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    /**
+     *
+     * @param {Request} req
+     * @param {Response} res
+     * @description reset password of user
+     * @route (PATCH /reset/pass)
+     */
+    resetPassword : async (req,res) => {
+        try {
+            let {
+                otp,
+                newPassword
+            } = req.body;
+            let checkOtp = await User.findOne({
+                otp : otp,
+                isDeleted : false
+            })
+            if(!checkOtp) {
+                return res.status(400).json({
+                    message: 'invalid otp'
+                })
+            }
+
+            let comparePass = await bcrypt.compare(newPassword,checkOtp.password);
+            if(comparePass) {
+                return res.status(409).json({
+                    message: 'enter another password'
+                })
+            }
+
+            if(checkOtp.expiryTime < Date.now()) {
+                return res.status(400).json({
+                    message: 'otp expired'
+                })
+            }
+
+            let hashPass = await bcrypt.hash(newPassword,10);
+            let data = await User.updateOne({
+                otp : otp,
+                isDeleted : false
+            })
+            .set({
+                password : hashPass,
+                otp : null,
+                expiryTime : null
+            })
+            data = _.omit(data,
+                "token",
+                "password"
+            );
+            return res.status(200).json({
+                message: 'password changed',
+                data : data
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message: 'server error ' + error
+            })
+        }
+    },
+    /**
+     * @description change user password
+     * @route (PATCH /change/pass)
+     */
+    changePassword : async (req,res) => {
+        try {
+            let {userId} = req.userData;
+            let {
+                oldPassword,
+                newPassword,
+                confirmPassword
+            } = req.body;
+            let findUser = await User.findOne({
+                id : userId,
+                isDeleted : false
+            });
+            if(!findUser) {
+                return res.status(404).json({
+                    message: 'user not found'
+                })
+            }
+
+            let comparePass = await bcrypt.compare(oldPassword, findUser.password);
+            if(!comparePass) {
+                return res.status(400).json({
+                    message: 'password invalid'
+                })
+            }
+            if(newPassword !== confirmPassword) {
+                return res.status(400).json({
+                    message : 'password and confirPassword must match'
+                })
+            }
+
+            let hashPass = await bcrypt.hash(newPassword,10);
+            let data = await User.updateOne({
+                id : findUser.id,
+                isDeleted : false
+            })
+            .set({
+                password : hashPass
+            })
+            data = _.omit(data,
+                "token",
+                "password"
+            )
+            return res.status(200).json({
+                message : 'password changed',
+                data : data
+            })
+        } catch (error) {
+            return res.status(500).json({
+                message : 'server error ' + error
+            })
+        }
+    }
 };

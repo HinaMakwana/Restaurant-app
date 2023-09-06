@@ -10,6 +10,7 @@
     "date-and-time": "^2.4.3",
     "dotenv": "^16.0.3",
     "jsonwebtoken": "^9.0.0",
+    "otp-generator": "^4.0.1",
     "sails": "^1.5.4",
     "sails-hook-orm": "^4.0.0",
     "sails-hook-sockets": "^2.0.0",

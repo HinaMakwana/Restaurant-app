@@ -54,4 +54,7 @@ module.exports.routes = {
     'POST /user/logout' : 'UserController.logout',
     'GET /user/list' : 'UserController.list',
     'GET /listOne' : 'UserController.profile',
+    'PATCH /forget/pass' : 'UserController.forgetPassword',
+    'PATCH /reset/pass' : 'UserController.resetPassword',
+    'PATCh /change/pass' : 'UserController.changePassword',
 };

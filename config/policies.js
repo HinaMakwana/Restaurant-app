@@ -19,6 +19,7 @@ module.exports.policies = {
   UserController : {
     logout : 'isAuthorized',
     profile : 'isAuthorized',
+    changePassword : 'isAuthorized'
   },
   CategoryController : {
     '*' : ['isAuthorized', 'isAdmin'], //AND condition

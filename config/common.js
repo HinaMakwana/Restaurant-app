@@ -51,8 +51,11 @@ const validation = {
     }
 }
 
+const otpGenerator = require('otp-generator');
+
 module.exports.common = {
     role,
     orderStatus,
     validation,
+    otpGenerator
 }
