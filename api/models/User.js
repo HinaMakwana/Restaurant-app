@@ -13,20 +13,24 @@ module.exports = {
 
     name : {
       type : 'string',
-      required : true
+      required : true,
+      columnType : 'varchar(120)'
     },
     email : {
       type : 'string',
       required : true,
-      isEmail : true
+      isEmail : true,
+      columnType : 'varchar(255)'
     },
     password : {
       type : 'string',
-      required : true
+      required : true,
+      columnType : 'varchar(255)'
     },
     token : {
       type : 'string',
-      allowNull: true
+      allowNull: true,
+      columnType: 'varchar'
     },
     role : {
       type : 'string',
@@ -34,15 +38,18 @@ module.exports = {
       defaultsTo : 'user',
     },
     mobileNo : {
-      type : 'number'
+      type : 'number',
+      columnType: 'float'
     },
     address : {
       type : 'string',
-      maxLength : 150
+      maxLength : 150,
+      columnType : 'varchar'
     },
     isDeleted: {
       type: 'boolean',
-      defaultsTo: false
+      defaultsTo: false,
+      columnType: 'boolean'
     }
 
   },

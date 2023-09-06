@@ -12,7 +12,8 @@ module.exports = {
   attributes: {
 
     name : {
-      type : 'string'
+      type : 'string',
+      columnType: 'varchar(255)'
     },
     isDeleted : {
       type : 'boolean',

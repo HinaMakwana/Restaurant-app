@@ -18,14 +18,17 @@ module.exports = {
       model : 'Food'
     },
     price : {
-      type : 'number'
+      type : 'number',
+      columnType : 'float'
     },
     quantity : {
       type : 'number',
-      defaultsTo : 1
+      defaultsTo : 1,
+      columnType : 'integer'
     },
     totalAmount : {
-      type : 'number'
+      type : 'number',
+      columnType: 'float'
     },
     isDeleted : {
       type : 'boolean',

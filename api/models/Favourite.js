@@ -17,14 +17,17 @@ module.exports = {
    },
    date : {
     type : 'ref',
-    defaultsTo : new Date().toLocaleDateString()
+    defaultsTo : new Date().toLocaleDateString(),
+    columnType : 'date'
    },
    price : {
-    type : 'number'
+    type : 'number',
+    columnType : 'float'
    },
    isDeleted : {
     type : 'boolean',
-    defaultsTo : false
+    defaultsTo : false,
+    columnType : 'boolean'
    }
 
   },

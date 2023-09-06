@@ -18,16 +18,18 @@ module.exports = {
     },
     date : {
       type : 'ref',
-      defaultsTo  : new Date().toLocaleDateString()
+      defaultsTo  : new Date().toLocaleDateString(),
     },
     guestNo : {
-      type : 'number'
+      type : 'number',
+      columnType : 'integer'
     },
     timeSlot : {
-      type : 'ref'
+      type : 'ref',
     },
     email : {
-      type : 'string'
+      type : 'string',
+      columnType : 'varchar(255)'
     },
     orderStatus : {
       type : 'string',

@@ -13,20 +13,23 @@ module.exports = {
 
     name : {
       type : 'string',
-      required : true
+      required : true,
+      columnType : 'varchar'
     },
     category : {
       model : 'Category'
     },
     price : {
-      type : 'number'
+      type : 'number',
+      columnType : 'float'
     },
     isDeleted : {
       type : 'boolean',
       defaultsTo : false
     },
     updatedAt : {
-      type : 'ref'
+      type : 'ref',
+
     },
     addedBy : {
       model: 'user'

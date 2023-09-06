@@ -13,15 +13,18 @@ module.exports = {
       model : 'User'
     },
     totalAmount : {
-      type : 'number'
+      type : 'number',
+      columnType : 'float'
     },
     address : {
       type : 'string',
-      maxLength : 140
+      maxLength : 140,
+      columnType : 'varchar'
     },
     orderDate : {
       type : 'ref',
-      defaultsTo : new Date().toLocaleDateString()
+      defaultsTo : new Date().toLocaleDateString(),
+      columnType : 'date'
     },
     isDeliver : {
       type : 'boolean',
