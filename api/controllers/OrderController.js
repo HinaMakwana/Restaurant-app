@@ -32,12 +32,12 @@ module.exports = {
         user: user,
         isDeleted: false,
       }).omit(["isDeleted", "user"]);
-      if (!findCartUser || findCartUser[0] == null) {
+      if (!findCartUser || findCartUser[0] === null) {
         return res.status(404).json({
           message: "you cannot order, first add food in cart",
         });
       }
-      if (address == null) {
+      if (address === null) {
         address = findUser.address;
       }
       const data = {

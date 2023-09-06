@@ -87,7 +87,7 @@ module.exports = {
     return data;
   },
   checkTime : async function(attr1,attr2) {
-    let msg, time;
+    let time;
     let newDate = Date.parse(attr2.concat(" " + attr1))
     let todayDate = new Date().toLocaleString()
     todayDate = date1.transform(todayDate, 'M/D/YYYY, h:m:s A','D/M/YYYY, h:m:s A')
@@ -105,38 +105,38 @@ module.exports = {
     } */
     let day = date1.transform(attr2,'D/M/YYYY','M/D/YYYY')
     let newDay = new Date(day).getDay()
-    if(newDay == 0 || newDay == 3) {
+    if(newDay === 0 || newDay === 3) {
       return {msg : 'Restaurant closed'}
     }
     const newData = date1.isValid(attr1,'h:m A')
-    if(newData == false){
+    if(newData === false){
       return {msg : 'time is invalid'}
     }
     const data = date1.preparse(attr1, 'h:m A')
     switch(newDay){
       case 1 : {
-        time = (data.h >= 9 && data.A == 0) || (data.h < 9 && data.A == 1)
+        time = (data.h >= 9 && data.A === 0) || (data.h < 9 && data.A === 1)
         console.log('monday');
         break;
       }
       case 2 : {
-        time = (data.h >= 9 && data.A == 0) || (data.h < 6 && data.A == 1)
+        time = (data.h >= 9 && data.A === 0) || (data.h < 6 && data.A === 1)
         console.log('tuesday');
 
         break;
       }
       case 4 : {
-        time = (data.h >= 9 && data.A == 0) || (data.h <= 8 && data.A == 1)
+        time = (data.h >= 9 && data.A === 0) || (data.h <= 8 && data.A === 1)
         console.log('thursday');
         break;
       }
       case 5 : {
-        time = (data.h >= 10 && data.A == 0) || (data.h <= 10 && data.A == 1)
+        time = (data.h >= 10 && data.A === 0) || (data.h <= 10 && data.A === 1)
         console.log('friday');
         break;
       }
       case 6 : {
-        time = (data.h >= 10 && data.A == 0) || (data.h <= 11 && data.A == 1)
+        time = (data.h >= 10 && data.A === 0) || (data.h <= 11 && data.A === 1)
         console.log('saturday');
         break;
       }

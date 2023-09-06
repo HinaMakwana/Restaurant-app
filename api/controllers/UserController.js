@@ -44,9 +44,9 @@ module.exports = {
             const pass = await bcrypt.hash(password, 10);
 
             if(mobileNo != null) {
-                if(mobileNo.length == 10){
+                if(mobileNo.length === 10){
                     console.log(isNaN(mobileNo));
-                    if(isNaN(mobileNo) == false){
+                    if(isNaN(mobileNo) === false){
                         console.log(mobileNo);
                     } else {
                         return res.status(400).json({
@@ -162,7 +162,7 @@ module.exports = {
             const user =req.userData.userId;
             let findUser = await User.findOne({id : user, isDeleted: false});
             if(findUser) {
-                let Edit = await User.updateOne({ id : findUser.id}, { token : ""});
+                let Edit = await User.updateOne({ id : findUser.id}, { token : null});
                 if(Edit) {
                     return res.status(200).json({
                         message : 'user logout successfully'

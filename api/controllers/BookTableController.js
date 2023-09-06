@@ -27,8 +27,8 @@ module.exports = {
       }
       const newDate = await BookTable.checkDate(date);
       const newTimeSlot = await BookTable.checkTime(timeSlot, date);
-      if (newDate.msg == "done") {
-        if (newTimeSlot == true) {
+      if (newDate.msg === "done") {
+        if (newTimeSlot === true) {
             console.log("ok");
         } else {
             return res.status(402).json({
@@ -41,7 +41,7 @@ module.exports = {
           error: newDate.msg,
         });
       }
-      if (isNaN(guestNo) == false && guestNo > 0) {
+      if (isNaN(guestNo) === false && guestNo > 0) {
         guestNo = parseInt(guestNo);
       } else {
         return res.status(400).json({
@@ -176,7 +176,7 @@ module.exports = {
     try {
       const { id, status } = req.body;
       const findTable = await BookTable.findOne({ id: id, isDeleted: false });
-      if (findTable.orderStatus == "confirm") {
+      if (findTable.orderStatus === "confirm") {
         return res.json({
           message: "table is already confirmed",
         });

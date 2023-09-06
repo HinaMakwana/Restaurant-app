@@ -44,7 +44,7 @@ module.exports = {
         });
       }
 
-      if (isNaN(quantity) == false && quantity > 0) {
+      if (isNaN(quantity) === false && quantity > 0) {
         quantity = parseInt(quantity);
       } else {
         if(!quantity) {
@@ -138,7 +138,7 @@ module.exports = {
         });
       }
       let quantity1;
-      if (isNaN(quantity) == false && quantity > 0) {
+      if (isNaN(quantity) === false && quantity > 0) {
         quantity1 = parseInt(quantity);
       } else {
         return res.status(400).json({
